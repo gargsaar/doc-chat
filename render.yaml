@@ -3,7 +3,7 @@ services:
     name: doc-chat-web
     env: python
     runtime: python-3.12
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
     startCommand: "inv prod"
     envVars:
       - key: SECRET_KEY
@@ -24,7 +24,7 @@ services:
     name: doc-chat-worker
     env: python
     runtime: python-3.12
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
     startCommand: "inv devworker"
     envVars:
       - key: SECRET_KEY

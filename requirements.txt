@@ -1,3 +1,9 @@
+# Build dependencies
+setuptools>=45
+wheel>=0.37.0
+pip>=22.0
+
+# Core dependencies
 boto3==1.26.122
 botocore==1.29.122
 celery==5.3.1
@@ -15,10 +21,7 @@ invoke==2.2.0
 pinecone-client==3.2.2
 pypdf==3.15.4
 watchdog==3.0.0
-tiktoken==0.5.2
-setuptools
-wheel
-pip
+tiktoken>=0.4.0,<0.6.0
 langchain-core>=0.1.16,<1.0.0
 redis==5.0.0
 chromadb>=0.4.22
