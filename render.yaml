@@ -2,7 +2,7 @@ services:
   - type: web
     name: doc-chat-web
     env: python
-    runtime: python-3.12
+    runtime: python-3.11
     buildCommand: "pip install --upgrade pip setuptools wheel && pip install --only-binary=:all: --prefer-binary -r requirements.txt || pip install --prefer-binary -r requirements.txt"
     startCommand: "inv prod"
     envVars:
@@ -27,7 +27,7 @@ services:
   - type: worker
     name: doc-chat-worker
     env: python
-    runtime: python-3.12
+    runtime: python-3.11
     buildCommand: "pip install --upgrade pip setuptools wheel && pip install --only-binary=:all: --prefer-binary -r requirements.txt || pip install --prefer-binary -r requirements.txt"
     startCommand: "inv devworker"
     envVars:
