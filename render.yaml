@@ -2,8 +2,9 @@ services:
   - type: web
     name: doc-chat-web
     env: python
+    runtime: python-3.12
     buildCommand: "pip install -r requirements.txt"
-  startCommand: "inv prod"
+    startCommand: "inv prod"
     envVars:
       - key: SECRET_KEY
         sync: false
@@ -11,11 +12,18 @@ services:
         sync: false
       - key: REDIS_URI
         sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: UPLOAD_URL
+        sync: false
+      - key: CHROMA_DB_PATH
+        sync: false
     autoDeploy: true
 
   - type: worker
     name: doc-chat-worker
     env: python
+    runtime: python-3.12
     buildCommand: "pip install -r requirements.txt"
     startCommand: "inv devworker"
     envVars:
@@ -24,6 +32,12 @@ services:
       - key: SQLALCHEMY_DATABASE_URI
         sync: false
       - key: REDIS_URI
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: UPLOAD_URL
+        sync: false
+      - key: CHROMA_DB_PATH
         sync: false
     autoDeploy: true
 
