@@ -45,6 +45,9 @@ Doc-Chat is an AI-powered document chat platform that allows users to upload, se
 	- `SECRET_KEY`
 	- `SQLALCHEMY_DATABASE_URI`
 	- `REDIS_URI` (from managed Redis service)
+    - `OPENAI_API_KEY`
+    - `UPLOAD_URL`
+    - `CHROMA_DB_PATH`
 3. Render will build and start your web and worker services using `render.yaml`:
 	- Web service: `inv prod` (uses Gunicorn for production)
 	- Worker service: `inv devworker`
