@@ -1,7 +1,8 @@
 from flask import Blueprint, g, request, Response, jsonify, stream_with_context
 from app.web.hooks import login_required, load_model
 from app.web.db.models import Pdf, Conversation
-from app.chat import build_chat, ChatArgs
+from app.chat.chat import build_chat
+from app.chat.models import ChatArgs
 
 bp = Blueprint("conversation", __name__, url_prefix="/api/conversations")
 
@@ -52,4 +53,19 @@ def create_message(conversation):
             stream_with_context(chat.stream(input)), mimetype="text/event-stream"
         )
     else:
-        return jsonify({"role": "assistant", "content": chat.run(input)})
+        # Use the full chain call to handle multiple outputs
+        result = chat({"question": input})
+        
+        # Extract the answer and optionally log source documents
+        answer = result.get("answer", "I don't know")
+        source_docs = result.get("source_documents", [])
+        
+        # Log source documents for debugging
+        if source_docs:
+            print(f"📚 Source documents used ({len(source_docs)}):")
+            for i, doc in enumerate(source_docs):
+                print(f"  Source {i+1}: {doc.page_content[:150]}...")
+        else:
+            print("⚠️ No source documents returned")
+        
+        return jsonify({"role": "assistant", "content": answer})

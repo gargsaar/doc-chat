@@ -1,5 +1,5 @@
-from typing import Dict
-from langchain.schema.messages import AIMessage, HumanMessage, SystemMessage
+from typing import Dict, List
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
 from app.web.db import db
 from app.web.db.models import Message
 from app.web.db.models.conversation import Conversation
@@ -7,7 +7,7 @@ from app.web.db.models.conversation import Conversation
 
 def get_messages_by_conversation_id(
     conversation_id: str,
-) -> AIMessage | HumanMessage | SystemMessage:
+) -> List[BaseMessage]:
     """
     Finds all messages that belong to the given conversation_id
 
@@ -48,6 +48,12 @@ def get_conversation_components(conversation_id: str) -> Dict[str, str]:
     Returns the components used in a conversation
     """
     conversation = Conversation.find_by(id=conversation_id)
+    if not conversation:
+        return {
+            "llm": "",
+            "retriever": "",
+            "memory": "",
+        }
     return {
         "llm": conversation.llm,
         "retriever": conversation.retriever,
@@ -62,4 +68,6 @@ def set_conversation_components(
     Sets the components used by a conversation
     """
     conversation = Conversation.find_by(id=conversation_id)
+    if not conversation:
+        raise ValueError(f"Conversation {conversation_id} not found")
     conversation.update(llm=llm, retriever=retriever, memory=memory)

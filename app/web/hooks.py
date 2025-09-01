@@ -3,13 +3,17 @@ import tempfile
 import uuid
 import os
 import logging
+from typing import Type, TypeVar
 from flask import g, session, request
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from werkzeug.exceptions import Unauthorized, BadRequest
-from app.web.db.models import User, Model
+from app.web.db.models import User
+from app.web.db.models.base import BaseModel
+
+ModelType = TypeVar('ModelType', bound=BaseModel)
 
 
-def load_model(Model: Model, extract_id_lambda=None):
+def load_model(Model, extract_id_lambda=None):
     def decorator(view):
         @functools.wraps(view)
         def wrapped_view(**kwargs):
@@ -25,7 +29,7 @@ def load_model(Model: Model, extract_id_lambda=None):
 
             instance = Model.find_by(id=model_id)
 
-            if instance.user_id != g.user.id:
+            if instance and hasattr(instance, 'user_id') and instance.user_id != g.user.id:
                 raise Unauthorized("You are not authorized to view this.")
 
             if model_id_name in kwargs:

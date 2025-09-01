@@ -28,7 +28,7 @@
 </script>
 
 <div class="w-full max-w-md mx-auto p-6">
-	<h2 class="text-3xl font-bold m-10">Upload a Document</h2>
+	<h2 class="text-3xl font-bold text-white mb-6">Upload a Document</h2>
 	<form on:submit|preventDefault={handleSubmit}>
 		<div class="w-42">
 			<label for="file-input" class="sr-only">Choose file</label>

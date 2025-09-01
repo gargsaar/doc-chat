@@ -2,13 +2,20 @@
 	import classNames from 'classnames';
 	export let disabled = false;
 	export let className = '';
+	export let loading = false;
 </script>
 
 <button
 	type="submit"
 	class={classNames(
-		'py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800',
+		'btn-enhanced w-full py-4 px-6 inline-flex justify-center items-center gap-3 rounded-xl border border-transparent font-semibold text-white focus:outline-none focus:ring-4 focus:ring-blue-500/50 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden',
 		className
 	)}
-	{disabled}><slot /></button
->
+	disabled={disabled || loading}>
+	{#if loading}
+		<div class="spinner"></div>
+		Loading...
+	{:else}
+		<slot />
+	{/if}
+</button>

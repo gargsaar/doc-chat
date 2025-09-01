@@ -2,20 +2,30 @@ import json
 import os
 import requests
 import tempfile
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Optional
 from app.web.config import Config
 
 upload_url = f"{Config.UPLOAD_URL}/upload"
 
 
-def upload(local_file_path: str) -> Tuple[Dict[str, str], int]:
+def upload(local_file_path: str, file_id: Optional[str] = None) -> Tuple[Dict[str, str], int]:
     with open(local_file_path, "rb") as f:
-        response = requests.post(upload_url, files={"file": f})
+        files_data = {"file": f}
+        data = {}
+        if file_id:
+            data["file_id"] = file_id
+        response = requests.post(upload_url, files=files_data, data=data)
         return json.loads(response.text), response.status_code
 
 
 def create_download_url(file_id):
     return f"{Config.UPLOAD_URL}/download/{file_id}"
+
+
+def delete(file_id: str) -> Tuple[Dict[str, str], int]:
+    """Delete a file from the upload service"""
+    response = requests.delete(f"{Config.UPLOAD_URL}/delete/{file_id}")
+    return json.loads(response.text), response.status_code
 
 
 def download(file_id):

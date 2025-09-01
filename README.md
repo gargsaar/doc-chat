@@ -1,6 +1,6 @@
 # First Time Setup
 
-## Using Pipenv [Recommended]
+## Using Pipenv
 
 ```
 # Install dependencies
@@ -14,28 +14,7 @@ flask --app app.web init-db
 
 ```
 
-## Using Venv [Optional]
-
-These instructions are included if you wish to use venv to manage your evironment and dependencies instead of Pipenv.
-
-```
-# Create the venv virtual environment
-python -m venv .venv
-
-# On MacOS, WSL, Linux
-source .venv/bin/activate
-
-# On Windows
-.\.venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Initialize the database
-flask --app app.web init-db
-```
-
-# Running the app [Pipenv]
+# Running the app
 
 There are three separate processes that need to be running for the app to work: the server, the worker, and Redis.
 
@@ -91,72 +70,41 @@ Then:
 flask --app app.web init-db
 ```
 
-# Running the app [Venv]
 
-_These instructions are included if you wish to use venv to manage your evironment and dependencies instead of Pipenv._
+# Redis - MacOS Setup
+Installing Redis on MacOS is super easy.
 
-There are three separate processes that need to be running for the app to work: the server, the worker, and Redis.
+1. Install Homebrew if it is not already installed. At your terminal, run the following command:
 
-If you stop any of these processes, you will need to start them back up!
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-Commands to start each are listed below. If you need to stop them, select the terminal window the process is running in and press Control-C
+2. Once Homebrew is installed, install Redis by running:
 
-### To run the Python server
+brew install redis
 
-Open a new terminal window and create a new virtual environment:
+3. Start up Redis by opening a new terminal window and running:
 
-```
-# On MacOS, WSL, Linux
-source .venv/bin/activate
-
-# On Windows
-.\.venv\Scripts\activate
-```
-
-Then:
-
-```
-inv dev
-```
-
-### To run the worker
-
-Open a new terminal window and create a new virtual environment:
-
-```
-# On MacOS, WSL, Linux
-source .venv/bin/activate
-
-# On Windows
-.\.venv\Scripts\activate
-```
-
-Then:
-
-```
-inv devworker
-```
-
-### To run Redis
-
-```
 redis-server
-```
 
-### To reset the database
+# Redis - Linux Setup
+Run the following commands:
 
-Open a new terminal window and create a new virtual environment:
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
 
-```
-# On MacOS, WSL, Linux
-source .venv/bin/activate
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
 
-# On Windows
-.\.venv\Scripts\activate
-```
+sudo apt-get update
 
-Then:
+sudo apt-get install redis
 
-```
-flask --app app.web init-db
-```
+Once you have done so, start the Redis server by opening a new terminal window then running the command:
+
+redis-server
+
+These directions are taken directly from the official install guide here:
+
+https://redis.io/docs/getting-started/installation/install-redis-on-linux/
+
+# Run worker
+
+inv devworker

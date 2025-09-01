@@ -6,6 +6,7 @@ export interface Document {
 	id: string;
 	file_id: string;
 	name: string;
+	created_on?: string;
 }
 
 interface UploadStore {
@@ -47,6 +48,23 @@ const upload = async (file: File) => {
 	}
 };
 
+const deleteDocument = async (documentId: string) => {
+	set({ error: '' });
+	
+	try {
+		console.log('Attempting to delete document:', documentId);
+		const response = await api.delete(`/pdfs/${documentId}`);
+		console.log('Delete response:', response);
+		
+		// Refresh the documents list after successful deletion
+		await getDocuments();
+		console.log('Documents list refreshed successfully');
+	} catch (error) {
+		console.error('Error deleting document:', error);
+		return set({ error: getErrorMessage(error) });
+	}
+};
+
 const getDocuments = async () => {
 	const { data } = await api.get('/pdfs');
 	set({ data });
@@ -56,4 +74,4 @@ const clearErrors = () => {
 	set({ error: '', uploadProgress: 0 });
 };
 
-export { upload, getDocuments, documents, clearErrors };
+export { upload, deleteDocument, getDocuments, documents, clearErrors };
