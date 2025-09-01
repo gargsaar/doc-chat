@@ -3,7 +3,7 @@ services:
     name: doc-chat-web
     env: python
     runtime: python-3.12
-    buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
+    buildCommand: "pip install --upgrade pip setuptools wheel && pip install --only-binary=:all: --prefer-binary -r requirements.txt || pip install --prefer-binary -r requirements.txt"
     startCommand: "inv prod"
     envVars:
       - key: SECRET_KEY
@@ -18,13 +18,17 @@ services:
         sync: false
       - key: CHROMA_DB_PATH
         sync: false
+      - key: PIP_NO_CACHE_DIR
+        value: "1"
+      - key: PIP_PREFER_BINARY
+        value: "1"
     autoDeploy: true
 
   - type: worker
     name: doc-chat-worker
     env: python
     runtime: python-3.12
-    buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
+    buildCommand: "pip install --upgrade pip setuptools wheel && pip install --only-binary=:all: --prefer-binary -r requirements.txt || pip install --prefer-binary -r requirements.txt"
     startCommand: "inv devworker"
     envVars:
       - key: SECRET_KEY
@@ -39,6 +43,10 @@ services:
         sync: false
       - key: CHROMA_DB_PATH
         sync: false
+      - key: PIP_NO_CACHE_DIR
+        value: "1"
+      - key: PIP_PREFER_BINARY
+        value: "1"
     autoDeploy: true
 
   - type: redis
