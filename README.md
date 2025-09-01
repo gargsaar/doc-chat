@@ -1,110 +1,68 @@
-# First Time Setup
 
-## Using Pipenv
+# Doc-Chat
 
-```
-# Install dependencies
-pipenv install
+Doc-Chat is an AI-powered document chat platform that allows users to upload, search, and interact with documents using natural language. It leverages modern LLMs and vector databases for semantic search and contextual conversation.
 
-# Create a virtual environment
-pipenv shell
+## Features
 
-# Initialize the database
-flask --app app.web init-db
+- **Document Upload & Management**: Securely upload and organize PDFs.
+- **Semantic Search**: Find information using natural language queries.
+- **Conversational AI**: Chat with your documents and get context-aware answers.
+- **User Authentication**: Secure login and access control.
+- **Task Queue**: Background processing with Celery.
+- **Vector Store Integration**: Fast, scalable semantic search using ChromaDB.
+- **REST API**: Interact programmatically with your documents.
 
-```
+## Local Development Setup
 
-# Running the app
+1. Install dependencies:
+	```sh
+	uv venv .venv
+	source .venv/bin/activate
+	uv pip install -r requirements.txt
+	```
+2. Start Redis locally (or use a managed service):
+	```sh
+	redis-server
+	```
+3. Initialize the database:
+	```sh
+	flask --app app.web init-db
+	```
+4. Start the web server:
+	```sh
+	inv dev
+	```
+5. Start the worker:
+	```sh
+	inv devworker
+	```
 
-There are three separate processes that need to be running for the app to work: the server, the worker, and Redis.
+## Deployment on Render
 
-If you stop any of these processes, you will need to start them back up!
+1. Push your code to GitHub and connect the repo to Render.
+2. Add environment variables in the Render dashboard:
+	- `SECRET_KEY`
+	- `SQLALCHEMY_DATABASE_URI`
+	- `REDIS_URI` (from managed Redis service)
+3. Render will build and start your web and worker services using `render.yaml`:
+	- Web service: `inv prod` (uses Gunicorn for production)
+	- Worker service: `inv devworker`
+	- Redis: managed by Render
+4. To reset the database, use the Render shell:
+	```sh
+	flask --app app.web init-db
+	```
 
-Commands to start each are listed below. If you need to stop them, select the terminal window the process is running in and press Control-C
+## Project Structure
 
-### To run the Python server
+- `app/` — Python backend (Flask, Celery, API, models, tasks)
+- `client/` — Svelte frontend
+- `chroma_db/` — Vector store data
+- `uploads/` — User-uploaded files
+- `render.yaml` — Render deployment configuration
+- `requirements.txt`, `Pipfile` — Python dependencies
 
-Open a new terminal window and create a new virtual environment:
+## License
 
-```
-pipenv shell
-```
-
-Then:
-
-```
-inv dev
-```
-
-### To run the worker
-
-Open a new terminal window and create a new virtual environment:
-
-```
-pipenv shell
-```
-
-Then:
-
-```
-inv devworker
-```
-
-### To run Redis
-
-```
-redis-server
-```
-
-### To reset the database
-
-Open a new terminal window and create a new virtual environment:
-
-```
-pipenv shell
-```
-
-Then:
-
-```
-flask --app app.web init-db
-```
-
-
-# Redis - MacOS Setup
-Installing Redis on MacOS is super easy.
-
-1. Install Homebrew if it is not already installed. At your terminal, run the following command:
-
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-2. Once Homebrew is installed, install Redis by running:
-
-brew install redis
-
-3. Start up Redis by opening a new terminal window and running:
-
-redis-server
-
-# Redis - Linux Setup
-Run the following commands:
-
-curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-
-echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
-
-sudo apt-get update
-
-sudo apt-get install redis
-
-Once you have done so, start the Redis server by opening a new terminal window then running the command:
-
-redis-server
-
-These directions are taken directly from the official install guide here:
-
-https://redis.io/docs/getting-started/installation/install-redis-on-linux/
-
-# Run worker
-
-inv devworker
+MIT

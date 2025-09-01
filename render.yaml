@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: doc-chat-web
+    env: python
+    buildCommand: "uv pip install -r requirements.txt"
+  startCommand: "inv prod"
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+      - key: SQLALCHEMY_DATABASE_URI
+        sync: false
+      - key: REDIS_URI
+        sync: false
+    autoDeploy: true
+
+  - type: worker
+    name: doc-chat-worker
+    env: python
+    buildCommand: "uv pip install -r requirements.txt"
+    startCommand: "inv devworker"
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+      - key: SQLALCHEMY_DATABASE_URI
+        sync: false
+      - key: REDIS_URI
+        sync: false
+    autoDeploy: true
+
+  - type: redis
+    name: doc-chat-redis
+    ipAllowList: []
+    plan: free

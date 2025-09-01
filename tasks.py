@@ -18,3 +18,13 @@ def devworker(ctx):
         pty=os.name != "nt",
         env={"APP_ENV": "development"},
     )
+
+
+@task
+def prod(ctx):
+    port = os.environ.get("PORT", "10000")
+    ctx.run(
+        f"gunicorn 'app.web:create_app()' --bind 0.0.0.0:{port} --workers 2",
+        pty=os.name != "nt",
+        env={"APP_ENV": "production"},
+    )
