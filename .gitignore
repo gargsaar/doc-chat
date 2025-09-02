@@ -9,3 +9,4 @@ chroma_db/
 *.sqlite3
 *.bin
 uploads/
+client/build/

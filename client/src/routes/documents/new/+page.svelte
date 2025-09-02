@@ -50,7 +50,7 @@
 
 		{#if loading && !$documents.error}
 			<Progress progress={$documents.uploadProgress}>
-				<Alert type="success">Upload Complete! Returning to list...</Alert>
+				<Alert type="success">Upload complete! Processing...please wait it may take some time.</Alert>
 			</Progress>
 		{/if}
 

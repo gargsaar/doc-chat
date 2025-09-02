@@ -85,7 +85,6 @@ def create_embeddings_for_pdf(pdf_id: str, pdf_path: str, user_id: Optional[str]
     """
     
     print(f"=== STARTING EMBEDDING CREATION FOR PDF {pdf_id} ===")
-    print(f"PDF path: {pdf_path}")
     
     try:
         # Validate file exists and is readable
@@ -104,7 +103,6 @@ def create_embeddings_for_pdf(pdf_id: str, pdf_path: str, user_id: Optional[str]
         
         # 1. Extract text from PDF using PyPDFLoader
         try:
-            print(f"Loading PDF with PyPDFLoader...")
             loader = PyPDFLoader(pdf_path)
             documents = loader.load()
             
@@ -120,7 +118,6 @@ def create_embeddings_for_pdf(pdf_id: str, pdf_path: str, user_id: Optional[str]
             raise ValueError(f"Could not process PDF file {pdf_id}. The file may be corrupted, password-protected, or in an unsupported format.") from e
         
         # 2. Divide the text into manageable chunks
-        print(f"Creating text splitter...")
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200,
@@ -129,13 +126,10 @@ def create_embeddings_for_pdf(pdf_id: str, pdf_path: str, user_id: Optional[str]
         )
         
         # Split the documents into chunks
-        print(f"Splitting documents into chunks...")
         chunks = text_splitter.split_documents(documents)
         
         if not chunks:
             raise ValueError(f"No text chunks could be created from PDF {pdf_id}")
-        
-        print(f"Created {len(chunks)} chunks from PDF")
         
         # Add comprehensive metadata to each chunk
         print(f"Adding metadata to chunks...")
@@ -158,8 +152,6 @@ def create_embeddings_for_pdf(pdf_id: str, pdf_path: str, user_id: Optional[str]
             
             # Add total chunks for context
             chunk.metadata['total_chunks'] = len(chunks)
-        
-        print(f"Added metadata to {len(chunks)} chunks (pdf_id, page, content, chunk_index)")
         
         # 3. Generate embeddings using OpenAI
         print(f"Initializing OpenAI embeddings...")
@@ -239,9 +231,6 @@ def create_embeddings_for_pdf(pdf_id: str, pdf_path: str, user_id: Optional[str]
         _add_pdf_mapping(chroma_db_path, pdf_id, collection_uuid)
         
         logger.info(f"Successfully created chunks for PDF {pdf_id} with {len(chunks)} chunks")
-        print(f"=== SUCCESS: PDF {pdf_id} processed with {len(chunks)} chunks and stored in ChromaDB ===")
-        print(f"📄 Collection UUID: {collection_uuid}")
-        print(f"📁 Mapping saved to: {_get_pdf_mappings_file(chroma_db_path)}")
         
     except Exception as e:
         logger.error(f"Error processing PDF {pdf_id}: {str(e)}")
@@ -377,16 +366,6 @@ def list_user_pdfs(user_id: str) -> None:
     if not mappings:
         print(f"No PDF mappings found for user {user_id}")
         return
-    
-    print(f"\n📚 PDF Collections for User: {user_id}")
-    print("=" * 60)
-    
-    for pdf_id, info in mappings.items():
-        print(f"📄 PDF ID: {pdf_id}")
-        print(f"   Collection Name: {info.get('collection_name', 'Unknown')}")
-        print(f"   Collection UUID: {info.get('collection_uuid', 'Unknown')}")
-        print(f"   Created At: {info.get('created_at', 'Unknown')}")
-        print("-" * 60)
 
 
 def delete_embeddings_for_pdf(pdf_id: str, user_id: Optional[str] = None):

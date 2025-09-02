@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 bp = Blueprint("files", __name__)
 
 # Create uploads directory if it doesn't exist
-UPLOADS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads")
+UPLOADS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "uploads")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 
