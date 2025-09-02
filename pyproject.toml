@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Sagar Garg", email = "gargsaar@example.com"},
+    {name = "Sarthak Garg", email = "gargsaar@example.com"},
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -26,6 +26,9 @@ dependencies = [
     "flask_cors==4.0.0",
     "Werkzeug==2.3.1",
     "gunicorn>=20.1.0",
+    
+    # Database drivers
+    "psycopg2-binary>=2.9.0",
     
     # LangChain v0.3 ecosystem - compatible versions
     "langchain==0.3.27",
