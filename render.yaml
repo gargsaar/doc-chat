@@ -1,3 +1,12 @@
+# Render Deployment Configuration
+# 
+# This configuration supports two deployment modes:
+# 1. Basic Mode (Free Tier): Uses sync task processing, no Redis/workers needed
+# 2. Advanced Mode (Paid): Uses async task processing with Redis and background workers
+#
+# By default, this is configured for Basic Mode to minimize costs.
+# To enable Advanced Mode, uncomment the Redis and worker services below.
+
 services:
   # Main web service
   - type: web
