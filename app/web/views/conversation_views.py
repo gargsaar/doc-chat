@@ -83,4 +83,21 @@ def create_message(conversation):
         else:
             print("⚠️ No source documents returned")
         
+        # Save both user message and AI response to database
+        from app.web.api import add_message_to_conversation
+        
+        # Save user message
+        add_message_to_conversation(
+            conversation_id=conversation.id,
+            role="human",
+            content=user_input
+        )
+        
+        # Save AI response
+        add_message_to_conversation(
+            conversation_id=conversation.id,
+            role="ai", 
+            content=answer
+        )
+        
         return jsonify({"role": "assistant", "content": answer})
