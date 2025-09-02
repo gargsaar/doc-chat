@@ -1,55 +1,90 @@
 services:
+  # Main web service
   - type: web
     name: doc-chat-web
     env: python
-    runtime: python-3.10.14
-    buildCommand: "python -m pip install --upgrade pip setuptools wheel && python -m pip install --only-binary=:all: -r requirements-render.txt || python -m pip install --prefer-binary -r requirements-render.txt"
-    startCommand: "inv prod"
+    plan: starter  # Upgrade to standard for production
+    region: oregon
+    branch: main
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "inv prod"  # Uses gunicorn as defined in tasks.py
+    healthCheckPath: "/"
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: APP_ENV
+        value: production
       - key: SECRET_KEY
-        sync: false
-      - key: SQLALCHEMY_DATABASE_URI
-        sync: false
-      - key: REDIS_URI
-        sync: false
+        sync: false  # Set this in Render dashboard
       - key: OPENAI_API_KEY
-        sync: false
+        sync: false  # Set this in Render dashboard
+      - key: SQLALCHEMY_DATABASE_URI
+        fromDatabase:
+          name: doc-chat-db
+          property: connectionString
+      - key: REDIS_URI
+        fromService:
+          type: redis
+          name: doc-chat-redis
+          property: connectionString
       - key: UPLOAD_URL
-        sync: false
+        sync: false  # Set this in Render dashboard
       - key: CHROMA_DB_PATH
-        sync: false
-      - key: PIP_NO_CACHE_DIR
-        value: "1"
-      - key: PIP_PREFER_BINARY
-        value: "1"
-    autoDeploy: true
+        value: "./chroma_db"
+  
+  # PostgreSQL database
+  - type: pserv
+    name: doc-chat-db
+    env: postgresql
+    plan: starter  # Free tier available
+    region: oregon
+    databaseName: doc_chat
+    databaseUser: doc_chat_user
 
+  # Redis for Celery task queue
+  - type: redis
+    name: doc-chat-redis
+    plan: starter  # Free tier available
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+
+  # Background worker for Celery tasks
   - type: worker
     name: doc-chat-worker
     env: python
-    runtime: python-3.10.14
-    buildCommand: "python -m pip install --upgrade pip setuptools wheel && python -m pip install --only-binary=:all: -r requirements-render.txt || python -m pip install --prefer-binary -r requirements-render.txt"
-    startCommand: "inv devworker"
+    plan: starter
+    region: oregon
+    branch: main
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "inv devworker"  # Uses your existing worker command
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: APP_ENV
+        value: production
       - key: SECRET_KEY
-        sync: false
-      - key: SQLALCHEMY_DATABASE_URI
-        sync: false
-      - key: REDIS_URI
-        sync: false
+        sync: false  # Set this in Render dashboard
       - key: OPENAI_API_KEY
-        sync: false
+        sync: false  # Set this in Render dashboard
+      - key: SQLALCHEMY_DATABASE_URI
+        fromDatabase:
+          name: doc-chat-db
+          property: connectionString
+      - key: REDIS_URI
+        fromService:
+          type: redis
+          name: doc-chat-redis
+          property: connectionString
       - key: UPLOAD_URL
-        sync: false
+        sync: false  # Set this in Render dashboard
       - key: CHROMA_DB_PATH
-        sync: false
-      - key: PIP_NO_CACHE_DIR
-        value: "1"
-      - key: PIP_PREFER_BINARY
-        value: "1"
-    autoDeploy: true
+        value: "./chroma_db"
 
-  - type: redis
-    name: doc-chat-redis
-    ipAllowList: []
-    plan: free
+# Environment variables to set in Render dashboard:
+# - SECRET_KEY: A secure random string for sessions
+# - OPENAI_API_KEY: Your OpenAI API key
+# - UPLOAD_URL: URL for file uploads (if using external storage)
+# Optional AWS S3 variables if using S3:
+# - AWS_ACCESS_KEY_ID
+# - AWS_SECRET_ACCESS_KEY  
+# - AWS_REGION

@@ -27,20 +27,25 @@ def create_conversation(pdf):
 @login_required
 @load_model(Conversation)
 def create_message(conversation):
-    input = request.json.get("input")
-    streaming = request.args.get("stream", False)
+    user_input = request.json.get("input") if request.json else None
+    if not user_input:
+        return jsonify({"error": "No input provided"}), 400
+        
+    streaming = request.args.get("stream", "false").lower() == "true"
 
     pdf = conversation.pdf
 
+    from app.chat.models import Metadata
+    
     chat_args = ChatArgs(
         conversation_id=conversation.id,
         pdf_id=pdf.id,
         streaming=streaming,
-        metadata={
-            "conversation_id": conversation.id,
-            "user_id": g.user.id,
-            "pdf_id": pdf.id,
-        },
+        metadata=Metadata(
+            conversation_id=conversation.id,
+            user_id=g.user.id,
+            pdf_id=pdf.id,
+        ),
     )
 
     chat = build_chat(chat_args)
@@ -48,17 +53,27 @@ def create_message(conversation):
     if not chat:
         return "Chat not yet implemented!"
 
+    # Get chat history for the LCEL chain
+    from app.chat.memories.sql_memory import get_chat_history
+    chat_history = get_chat_history(conversation.id)
+
     if streaming:
+        # For streaming, we need to implement this differently with LCEL
+        def generate():
+            for chunk in chat.stream({"input": user_input, "chat_history": chat_history}):
+                if "answer" in chunk:
+                    yield f"data: {chunk['answer']}\n\n"
+        
         return Response(
-            stream_with_context(chat.stream(input)), mimetype="text/event-stream"
+            stream_with_context(generate()), mimetype="text/event-stream"
         )
     else:
-        # Use the full chain call to handle multiple outputs
-        result = chat({"question": input})
+        # Use the new LCEL chain interface
+        result = chat.invoke({"input": user_input, "chat_history": chat_history})
         
         # Extract the answer and optionally log source documents
         answer = result.get("answer", "I don't know")
-        source_docs = result.get("source_documents", [])
+        source_docs = result.get("context", [])
         
         # Log source documents for debugging
         if source_docs:

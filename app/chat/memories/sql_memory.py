@@ -1,20 +1,17 @@
 from pydantic import BaseModel
-from langchain.memory import ConversationBufferMemory
 from langchain_core.chat_history import BaseChatMessageHistory
 from typing import List
 from langchain_core.messages import BaseMessage
-from flask import current_app, has_app_context, g
-
-from app.web.api import (
-    get_messages_by_conversation_id,
-    add_message_to_conversation
-)
 
 class SqlMessageHistory(BaseChatMessageHistory):
     def __init__(self, conversation_id: str):
         super().__init__()
         self.conversation_id = conversation_id
         self._app = None
+        
+        # Import Flask functions locally to avoid import-time issues
+        from flask import current_app, has_app_context
+        from app.web.api import get_messages_by_conversation_id
         
         # Try to get the current app instance
         if has_app_context():
@@ -24,6 +21,10 @@ class SqlMessageHistory(BaseChatMessageHistory):
             self.messages = []
     
     def add_message(self, message: BaseMessage) -> None:
+        # Import Flask functions locally
+        from flask import current_app, has_app_context
+        from app.web.api import add_message_to_conversation, get_messages_by_conversation_id
+        
         # Handle content type conversion
         content = message.content
         if isinstance(content, list):
@@ -57,11 +58,18 @@ class SqlMessageHistory(BaseChatMessageHistory):
         self.messages = []
 
 def build_memory(chat_args):
-    return ConversationBufferMemory(
-        chat_memory=SqlMessageHistory(
-            conversation_id=chat_args.conversation_id
-        ),
-        return_messages=True,
-        memory_key="chat_history",
-        output_key="answer"
+    """
+    For LCEL chains, we return the SqlMessageHistory directly
+    since memory is handled differently in the new architecture
+    """
+    return SqlMessageHistory(
+        conversation_id=chat_args.conversation_id
     )
+
+
+def get_chat_history(conversation_id: str):
+    """
+    Get chat history as a list of messages for LCEL chains
+    """
+    history = SqlMessageHistory(conversation_id)
+    return history.messages

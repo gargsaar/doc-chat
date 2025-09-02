@@ -8,7 +8,7 @@ from app.web.db.models.message import Message
 from app.web.db import db
 from app.web.tasks.embeddings import process_document  # type: ignore
 from app.web import files
-from app.chat import delete_embeddings_for_pdf
+from app.chat.create_embeddings import delete_embeddings_for_pdf
 
 bp = Blueprint("pdf", __name__, url_prefix="/api/pdfs")
 
