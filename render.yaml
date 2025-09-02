@@ -39,8 +39,6 @@ services:
       #     type: redis
       #     name: doc-chat-redis
       #     property: connectionString
-      - key: UPLOAD_URL
-        sync: false  # Set this in Render dashboard
       - key: CHROMA_DB_PATH
         value: "./chroma_db"
   
