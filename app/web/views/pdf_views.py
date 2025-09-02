@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, g, jsonify
+from flask import Blueprint, g, jsonify, current_app
 from werkzeug.exceptions import Unauthorized
 from app.web.hooks import login_required, handle_file_upload, load_model
 from app.web.db.models import Pdf
@@ -44,13 +44,22 @@ def upload_file(file_id, file_path, file_name):
 
     pdf = Pdf.create(id=file_id, name=file_name, user_id=g.user.id)
 
-    # TODO: Defer this to be processed by the worker
+    # Process document embeddings (async with workers or sync without)
     try:
-        process_document.delay(pdf.id)
+        if current_app.config.get('CELERY_ENABLED', False):
+            # Async processing with Celery workers
+            process_document.delay(pdf.id)
+            current_app.logger.info(f"📄 Document {pdf.name} queued for background processing")
+        else:
+            # Synchronous processing (no workers)
+            current_app.logger.info(f"📄 Processing document {pdf.name} synchronously...")
+            # In eager mode, delay() will execute synchronously
+            process_document.delay(pdf.id)
+            current_app.logger.info(f"✅ Document {pdf.name} processed successfully")
     except Exception as e:
         # Log the error but don't fail the upload
-        print(f"Error processing document {pdf.id}: {str(e)}")
-        # You might want to set a status field on the PDF to indicate processing failed
+        current_app.logger.error(f"❌ Error processing document {pdf.id}: {str(e)}")
+        # In a production app, you might want to set a status field on the PDF
 
     return pdf.as_dict()
 

@@ -14,6 +14,8 @@ services:
         value: 3.11.0
       - key: APP_ENV
         value: production
+      - key: USE_WORKERS
+        value: false  # Set to 'true' to enable Redis/Celery workers (requires paid plan)
       - key: SECRET_KEY
         sync: false  # Set this in Render dashboard
       - key: OPENAI_API_KEY
@@ -22,11 +24,12 @@ services:
         fromDatabase:
           name: doc-chat-db
           property: connectionString
-      - key: REDIS_URI
-        fromService:
-          type: redis
-          name: doc-chat-redis
-          property: connectionString
+      # Uncomment these lines if you want to enable workers (requires paid Redis service):
+      # - key: REDIS_URI
+      #   fromService:
+      #     type: redis
+      #     name: doc-chat-redis
+      #     property: connectionString
       - key: UPLOAD_URL
         sync: false  # Set this in Render dashboard
       - key: CHROMA_DB_PATH
@@ -41,44 +44,48 @@ services:
     databaseName: doc_chat
     databaseUser: doc_chat_user
 
-  # Redis for Celery task queue
-  - type: redis
-    name: doc-chat-redis
-    plan: starter  # Free tier available
-    region: oregon
-    maxmemoryPolicy: allkeys-lru
-
-  # Background worker for Celery tasks
-  - type: worker
-    name: doc-chat-worker
-    env: python
-    plan: starter
-    region: oregon
-    branch: main
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "inv prodworker"  # Production worker without auto-restart
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: APP_ENV
-        value: production
-      - key: SECRET_KEY
-        sync: false  # Set this in Render dashboard
-      - key: OPENAI_API_KEY
-        sync: false  # Set this in Render dashboard
-      - key: SQLALCHEMY_DATABASE_URI
-        fromDatabase:
-          name: doc-chat-db
-          property: connectionString
-      - key: REDIS_URI
-        fromService:
-          type: redis
-          name: doc-chat-redis
-          property: connectionString
-      - key: UPLOAD_URL
-        sync: false  # Set this in Render dashboard
-      - key: CHROMA_DB_PATH
-        value: "./chroma_db"
+# Uncomment these services if you want to enable background workers (requires paid plan):
+#  
+# # Redis for Celery task queue
+# - type: redis
+#   name: doc-chat-redis
+#   plan: starter  # Paid service
+#   region: oregon
+#   maxmemoryPolicy: allkeys-lru
+#
+# # Background worker for Celery tasks  
+# - type: worker
+#   name: doc-chat-worker
+#   env: python
+#   plan: starter  # Paid service
+#   region: oregon
+#   branch: main
+#   buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+#   startCommand: "inv prodworker"  # Production worker without auto-restart
+#   envVars:
+#     - key: PYTHON_VERSION
+#       value: 3.11.0
+#     - key: APP_ENV
+#       value: production
+#     - key: USE_WORKERS
+#       value: true
+#     - key: SECRET_KEY
+#       sync: false  # Set this in Render dashboard
+#     - key: OPENAI_API_KEY
+#       sync: false  # Set this in Render dashboard
+#     - key: SQLALCHEMY_DATABASE_URI
+#       fromDatabase:
+#         name: doc-chat-db
+#         property: connectionString
+#     - key: REDIS_URI
+#       fromService:
+#         type: redis
+#         name: doc-chat-redis
+#         property: connectionString
+#     - key: UPLOAD_URL
+#       sync: false  # Set this in Render dashboard
+#     - key: CHROMA_DB_PATH
+#       value: "./chroma_db"
 
 # Environment variables to set in Render dashboard:
 # - SECRET_KEY: A secure random string for sessions

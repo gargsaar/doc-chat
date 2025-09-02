@@ -24,8 +24,15 @@ def create_app():
     register_extensions(app)
     register_hooks(app)
     register_blueprints(app)
-    if Config.CELERY["broker_url"]:
-        celery_init_app(app)
+    
+    # Always initialize Celery, but with appropriate config
+    celery_init_app(app)
+    
+    # Log execution mode for debugging
+    if Config.CELERY_ENABLED:
+        app.logger.info("🚀 Celery workers enabled - tasks will run asynchronously")
+    else:
+        app.logger.info("⚡ Workers disabled - tasks will run synchronously")
 
     return app
 
