@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 
-from app.web.db import db, init_db_command
+from app.web.db import db, init_db_command, reset_db_command
 from app.web.db import models  # This imports all models automatically
 from app.celery import celery_init_app
 from app.web.config import Config
@@ -40,6 +40,7 @@ def create_app():
 def register_extensions(app):
     db.init_app(app)
     app.cli.add_command(init_db_command)
+    app.cli.add_command(reset_db_command)
 
 
 def register_blueprints(app):

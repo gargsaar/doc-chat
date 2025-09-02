@@ -16,7 +16,7 @@ services:
     region: oregon
     branch: main
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "flask --app app.web init-db && inv prod"  # Initialize DB then start
+    startCommand: "flask --app app.web init-db && inv prod"  # Safe initialization - only creates if needed
     healthCheckPath: "/"
     envVars:
       - key: PYTHON_VERSION

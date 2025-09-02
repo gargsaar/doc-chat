@@ -84,6 +84,13 @@ Setup steps:
    - `OPENAI_API_KEY` (your OpenAI API key)
    - `UPLOAD_URL` (your Render app URL, e.g., `https://your-app.onrender.com`)
 
+The database will be automatically initialized on first deployment. No manual setup required!
+
+### Database Management
+- **Safe initialization**: `flask --app app.web init-db` (checks if tables exist, creates only if needed)
+- **Reset database**: `flask --app app.web reset-db` (destructive - recreates all tables)
+- **Production**: Database tables persist across deployments automatically
+
 ### Advanced Deployment (With Background Workers - Optional)
 For high-traffic production environments, you can enable asynchronous background workers:
 
