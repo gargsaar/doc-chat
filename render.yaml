@@ -7,7 +7,7 @@ services:
     region: oregon
     branch: main
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "inv prod"  # Uses gunicorn as defined in tasks.py
+    startCommand: "flask --app app.web init-db && inv prod"  # Initialize DB then start
     healthCheckPath: "/"
     envVars:
       - key: PYTHON_VERSION
@@ -56,7 +56,7 @@ services:
     region: oregon
     branch: main
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "inv devworker"  # Uses your existing worker command
+    startCommand: "inv prodworker"  # Production worker without auto-restart
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0

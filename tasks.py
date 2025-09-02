@@ -28,3 +28,12 @@ def prod(ctx):
         pty=os.name != "nt",
         env={"APP_ENV": "production"},
     )
+
+
+@task
+def prodworker(ctx):
+    ctx.run(
+        "celery -A app.celery.worker worker --concurrency=2 --loglevel=INFO",
+        pty=os.name != "nt",
+        env={"APP_ENV": "production"},
+    )
