@@ -38,30 +38,47 @@ def upload_file(file_id, file_path, file_name):
     except Exception as e:
         return {"error": f"Error validating PDF file: {str(e)}"}, 500
     
-    res, status_code = files.upload(file_path, file_id)
-    if status_code >= 400:
-        return res, status_code
-
-    pdf = Pdf.create(id=file_id, name=file_name, user_id=g.user.id)
-
-    # Process document embeddings (async with workers or sync without)
+    # Atomic operation: file upload and database creation
+    pdf = None
     try:
-        if current_app.config.get('CELERY_ENABLED', False):
-            # Async processing with Celery workers
-            process_document.delay(pdf.id)
-            current_app.logger.info(f"📄 Document {pdf.name} queued for background processing")
-        else:
-            # Synchronous processing (no workers)
-            current_app.logger.info(f"📄 Processing document {pdf.name} synchronously...")
-            # In eager mode, delay() will execute synchronously
-            process_document.delay(pdf.id)
-            current_app.logger.info(f"✅ Document {pdf.name} processed successfully")
+        # Step 1: Upload file to storage
+        res, status_code = files.upload(file_path, file_id)
+        if status_code >= 400:
+            return res, status_code
+        
+        # Step 2: Create database entry only if file upload succeeded
+        pdf = Pdf.create(id=file_id, name=file_name, user_id=g.user.id)
+        
+        # Step 3: Process document embeddings (async with workers or sync without)
+        try:
+            if current_app.config.get('CELERY_ENABLED', False):
+                # Async processing with Celery workers
+                process_document.delay(pdf.id)
+                current_app.logger.info(f"📄 Document {pdf.name} queued for background processing")
+            else:
+                # Synchronous processing (no workers)
+                current_app.logger.info(f"📄 Processing document {pdf.name} synchronously...")
+                # In eager mode, delay() will execute synchronously
+                process_document.delay(pdf.id)
+                current_app.logger.info(f"✅ Document {pdf.name} processed successfully")
+        except Exception as e:
+            # Log the error but don't fail the upload since PDF and file are already saved
+            current_app.logger.error(f"❌ Error processing embeddings for document {pdf.id}: {str(e)}")
+            # Note: PDF is still usable, just without embeddings initially
+        
+        return pdf.as_dict()
+        
     except Exception as e:
-        # Log the error but don't fail the upload
-        current_app.logger.error(f"❌ Error processing document {pdf.id}: {str(e)}")
-        # In a production app, you might want to set a status field on the PDF
-
-    return pdf.as_dict()
+        # If database creation failed but file was uploaded, clean up the file
+        if pdf is None:  # Database creation failed
+            try:
+                files.delete(file_id)
+                current_app.logger.info(f"🧹 Cleaned up uploaded file {file_id} after database error")
+            except Exception as cleanup_error:
+                current_app.logger.error(f"❌ Failed to cleanup file {file_id}: {str(cleanup_error)}")
+        
+        current_app.logger.error(f"❌ Error in PDF upload process: {str(e)}")
+        return {"error": f"Failed to process PDF upload: {str(e)}"}, 500
 
 
 @bp.route("/<string:pdf_id>", methods=["GET"])

@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 bp = Blueprint("files", __name__)
 
 # Create uploads directory if it doesn't exist
-UPLOADS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "uploads")
+UPLOADS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 
@@ -54,6 +54,17 @@ def download_file(file_id):
         if not os.path.exists(file_path):
             return jsonify({"error": "File not found"}), 404
         
+        # Detect if it's a PDF file and set appropriate MIME type
+        with open(file_path, 'rb') as f:
+            header = f.read(4)
+            if header == b'%PDF':
+                # It's a PDF file, serve with proper MIME type for inline viewing
+                return send_file(file_path, 
+                               mimetype='application/pdf',
+                               as_attachment=False,  # Allow inline viewing
+                               download_name=f'{file_id}.pdf')
+        
+        # Default behavior for non-PDF files
         return send_file(file_path, as_attachment=True, download_name=file_id)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
